@@ -98,18 +98,19 @@ class CategorySection extends StatelessWidget {
                 final task = entry.value;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8),
-                  child: TaskItemCard(
-                    title: task['title'] as String,
-                    isCompleted: task['isCompleted'] as bool,
-                    category: categoryName,
-                    categoryColor: categoryColor,
-                    onToggle: () {
-                      // Handle task toggle
-                    },
-                    onDelete: () {
-                      // Handle task delete
-                    },
-                  ),
+                  child: Text("Hello World"),
+                  // TaskItemCard(
+                  //   title: task['title'] as String,
+                  //   isCompleted: task['isCompleted'] as bool,
+                  //   category: categoryName,
+                  //   categoryColor: categoryColor,
+                  //   onToggle: () {
+                  //     // Handle task toggle
+                  //   },
+                  //   onDelete: () {
+                  //     // Handle task delete
+                  //   },
+                  // ),
                 );
               }).toList(),
             ),

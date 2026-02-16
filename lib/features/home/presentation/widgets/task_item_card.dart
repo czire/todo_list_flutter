@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:todo_list/features/home/data/models/task.dart';
 
 class TaskItemCard extends StatelessWidget {
-  final String title;
-  final bool isCompleted;
-  final String category;
-  final Color categoryColor;
+  final Task task;
   final VoidCallback onToggle;
   final VoidCallback onDelete;
 
   const TaskItemCard({
     super.key,
-    required this.title,
-    required this.isCompleted,
-    required this.category,
-    required this.categoryColor,
+    required this.task,
     required this.onToggle,
     required this.onDelete,
   });
@@ -23,7 +18,7 @@ class TaskItemCard extends StatelessWidget {
     final isDesktop = MediaQuery.of(context).size.width > 840;
 
     return Card(
-      elevation: isCompleted ? 1 : 2,
+      elevation: task.isDone ? 1 : 2,
       child: InkWell(
         onTap: onToggle,
         borderRadius: BorderRadius.circular(12),
@@ -35,7 +30,7 @@ class TaskItemCard extends StatelessWidget {
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 child: Checkbox(
-                  value: isCompleted,
+                  value: task.isDone,
                   onChanged: (_) => onToggle(),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(6),
@@ -52,10 +47,10 @@ class TaskItemCard extends StatelessWidget {
                     AnimatedDefaultTextStyle(
                       duration: const Duration(milliseconds: 200),
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                            decoration: isCompleted
+                            decoration: task.isDone
                                 ? TextDecoration.lineThrough
                                 : TextDecoration.none,
-                            color: isCompleted
+                            color: task.isDone
                                 ? Theme.of(context)
                                     .colorScheme
                                     .onSurfaceVariant
@@ -64,7 +59,7 @@ class TaskItemCard extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                           ),
                       child: Text(
-                        title,
+                        task.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -77,10 +72,10 @@ class TaskItemCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: categoryColor.withValues(alpha: 0.1),
+                        color: task.categoryColor!.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
                         border: Border.all(
-                          color: categoryColor.withValues(alpha: 0.3),
+                          color: task.categoryColor!.withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
@@ -90,14 +85,14 @@ class TaskItemCard extends StatelessWidget {
                           Icon(
                             Icons.label,
                             size: 14,
-                            color: categoryColor,
+                            color: task.categoryColor,
                           ),
                           const SizedBox(width: 4),
                           Text(
-                            category,
+                            task.category,
                             style:
                                 Theme.of(context).textTheme.labelSmall?.copyWith(
-                                      color: categoryColor,
+                                      color: task.categoryColor,
                                       fontWeight: FontWeight.w600,
                                     ),
                           ),

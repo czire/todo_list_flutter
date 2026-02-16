@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_list/features/categories/presentation/categories_screen.dart';
+import 'package:todo_list/features/home/data/models/task.dart';
 import 'package:todo_list/features/home/presentation/home_screen.dart';
 import 'package:todo_list/features/settings/presentation/settings_screen.dart';
 
-void main() {
-  runApp(const TodoApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Hive.initFlutter();
+  Hive.registerAdapter(TaskAdapter());
+
+  await Hive.openBox<Task>('tasks');
+
+  runApp(const ProviderScope(child: TodoApp()));
 }
 
 class TodoApp extends StatelessWidget {
