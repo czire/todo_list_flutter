@@ -60,6 +60,19 @@ class TaskNotifier extends AsyncNotifier<List<Task>> {
     state = AsyncValue.data(await repository.getTasks());
   }
 
+  Future<void> quickAddTask(String title) async {
+    final newTask = Task(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      title: title,
+      isDone: false,
+      priority: 1,
+      category: 'General',
+      categoryColor: Colors.grey,
+    );
+
+    await addTask(newTask);
+  }
+
   Future<void> updateTask(String id, Task updatedTask) async {
     _validateTask(updatedTask);
 

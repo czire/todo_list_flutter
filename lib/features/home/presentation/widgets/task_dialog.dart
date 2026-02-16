@@ -65,7 +65,6 @@ class _TaskDialogState extends State<_TaskDialog> {
 
     try {
       // Create task object from form data
-      // This is just data collection, not business logic
       final task = Task(
         id:
             widget.existingTask?.id ??
@@ -78,17 +77,17 @@ class _TaskDialogState extends State<_TaskDialog> {
         categoryColor: _selectedCategoryColor,
       );
 
-      // Validation and persistence happen here
+      // Validation and persistence
       await widget.onSave(task);
 
-      // UI Feedback: Close dialog on success
+      // Close dialog on success
       if (mounted) {
         Navigator.of(context).pop();
 
         _showSuccessSnackBar();
       }
     } catch (e) {
-      // UI Feedback: Show error message
+      // Show error message
       if (mounted) {
         _showErrorSnackBar(e.toString());
       }
@@ -364,7 +363,9 @@ class _TaskDialogState extends State<_TaskDialog> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
             side: BorderSide(
-              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+              color: Theme.of(
+                context,
+              ).colorScheme.outline.withValues(alpha: 0.2),
             ),
           ),
           child: InkWell(

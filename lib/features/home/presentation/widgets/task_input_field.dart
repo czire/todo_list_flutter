@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_list/features/home/presentation/providers/task_provider.dart';
 
-class TaskInputField extends StatefulWidget {
+class TaskInputField extends ConsumerStatefulWidget {
   const TaskInputField({super.key});
 
   @override
-  State<TaskInputField> createState() => _TaskInputFieldState();
+  ConsumerState<TaskInputField> createState() => _TaskInputFieldState();
 }
 
-class _TaskInputFieldState extends State<TaskInputField> {
+class _TaskInputFieldState extends ConsumerState<TaskInputField> {
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
+  String? _errorText;
 
   @override
   void dispose() {
@@ -18,17 +21,17 @@ class _TaskInputFieldState extends State<TaskInputField> {
     super.dispose();
   }
 
-  void _handleSubmit() {
-    if (_controller.text.trim().isEmpty) return;
+  void _handleSubmit() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty) {
+      setState(() => _errorText = 'Task title cannot be empty');
+      return;
+    }
 
-    // Handle task submission (to be implemented with business logic)
-    final taskText = _controller.text.trim();
-    print('Task submitted: $taskText');
+    await ref.read(taskProvider.notifier).quickAddTask(text);
 
-    // Clear the input field
     _controller.clear();
-
-    // Optional: Keep focus for quick entry
+    _errorText = null;
     _focusNode.requestFocus();
   }
 
@@ -37,8 +40,8 @@ class _TaskInputFieldState extends State<TaskInputField> {
     final isDesktop = MediaQuery.of(context).size.width > 840;
 
     return Card(
-      elevation: 4,
-      shadowColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.2),
+      elevation: 2,
+      shadowColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
       child: Padding(
         padding: EdgeInsets.all(isDesktop ? 20 : 16),
         child: Row(
@@ -49,9 +52,7 @@ class _TaskInputFieldState extends State<TaskInputField> {
                 focusNode: _focusNode,
                 decoration: InputDecoration(
                   hintText: 'Add a new task...',
-                  hintStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                  errorText: _errorText,
                   prefixIcon: Icon(
                     Icons.add_circle_outline,
                     color: Theme.of(context).colorScheme.primary,
