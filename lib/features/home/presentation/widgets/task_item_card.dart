@@ -116,11 +116,51 @@ class TaskItemCard extends ConsumerWidget {
                           ],
                         ),
                       ),
+                      // Due date
+                      if (task.dueDate != null) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.calendar_today_outlined,
+                              size: 14,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant
+                                  .withValues(alpha: 0.6),
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Due:',
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant
+                                        .withValues(alpha: 0.6),
+                                  ),
+                            ),
+
+                            const SizedBox(width: 4),
+                            Text(
+                              '${task.dueDate!.day}/${task.dueDate!.month}/${task.dueDate!.year}',
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant
+                                        .withValues(alpha: 0.6),
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
                 const SizedBox(width: 12),
-                // Delete button
+                // Edit button
                 IconButton(
                   icon: const Icon(Icons.edit),
                   onPressed: onEdit,

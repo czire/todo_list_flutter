@@ -52,11 +52,28 @@ class TaskNotifier extends AsyncNotifier<List<Task>> {
     );
   }
 
+  Future<void> getActiveTasks() async {
+    state = AsyncValue.loading();
+    final tasks = await repository.getTasks();
+    state = AsyncValue.data(tasks.where((t) => !t.isDone).toList());
+  }
+
+  Future<void> getCompletedTasks() async {
+    state = AsyncValue.loading();
+    final tasks = await repository.getTasks();
+    state = AsyncValue.data(tasks.where((t) => t.isDone).toList());
+  }
+
   Future<void> addTask(Task task) async {
     _validateTask(task);
     _ensureUniqueId(task);
 
     await repository.addTask(task);
+    state = AsyncValue.data(await repository.getTasks());
+  }
+
+  Future<void> refreshTasks() async {
+    state = AsyncValue.loading();
     state = AsyncValue.data(await repository.getTasks());
   }
 
@@ -108,6 +125,23 @@ class TaskNotifier extends AsyncNotifier<List<Task>> {
     }
 
     state = AsyncValue.data(await repository.getTasks());
+  }
+
+  Future<void> sortByDueDate() async {
+    final tasks = await repository.getTasks();
+    tasks.sort((a, b) {
+      if (a.dueDate == null && b.dueDate == null) return 0;
+      if (a.dueDate == null) return 1;
+      if (b.dueDate == null) return -1;
+      return a.dueDate!.compareTo(b.dueDate!);
+    });
+    state = AsyncValue.data(tasks);
+  }
+
+  Future<void> sortByPriority() async {
+    final tasks = await repository.getTasks();
+    tasks.sort((a, b) => b.priority.compareTo(a.priority));
+    state = AsyncValue.data(tasks);
   }
 
   void _validateTask(Task task) {

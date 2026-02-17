@@ -24,9 +24,9 @@ class HomeScreen extends ConsumerWidget {
           children: [
             Text(
               'My Tasks',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             // Dynamic task count from provider
             tasksAsync.when(
@@ -35,8 +35,8 @@ class HomeScreen extends ConsumerWidget {
                 return Text(
                   'You have $taskCount ${taskCount == 1 ? 'task' : 'tasks'}',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 );
               },
               loading: () => const SizedBox.shrink(),
@@ -51,8 +51,7 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: () {
-              // TODO: Show filter options
-              _showFilterOptions(context);
+              _showFilterOptions(context, ref);
             },
             tooltip: 'Filter tasks',
           ),
@@ -60,7 +59,6 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.more_vert),
             onPressed: () {
-              // TODO: Show more options
               _showMoreOptions(context, ref);
             },
             tooltip: 'More options',
@@ -162,7 +160,7 @@ class HomeScreen extends ConsumerWidget {
   }
 
   /// Shows filter options bottom sheet
-  void _showFilterOptions(BuildContext context) {
+  void _showFilterOptions(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -178,16 +176,16 @@ class HomeScreen extends ConsumerWidget {
               children: [
                 Text(
                   'Filter Tasks',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
                 ListTile(
                   leading: const Icon(Icons.all_inclusive),
                   title: const Text('All Tasks'),
                   onTap: () {
-                    // TODO: Implement filter
+                    ref.read(taskProvider.notifier).refreshTasks();
                     Navigator.pop(context);
                   },
                 ),
@@ -195,7 +193,7 @@ class HomeScreen extends ConsumerWidget {
                   leading: const Icon(Icons.check_circle_outline),
                   title: const Text('Active Tasks'),
                   onTap: () {
-                    // TODO: Implement filter
+                    ref.read(taskProvider.notifier).getActiveTasks();
                     Navigator.pop(context);
                   },
                 ),
@@ -203,7 +201,7 @@ class HomeScreen extends ConsumerWidget {
                   leading: const Icon(Icons.done_all),
                   title: const Text('Completed Tasks'),
                   onTap: () {
-                    // TODO: Implement filter
+                    ref.read(taskProvider.notifier).getCompletedTasks();
                     Navigator.pop(context);
                   },
                 ),
@@ -212,7 +210,7 @@ class HomeScreen extends ConsumerWidget {
                   leading: const Icon(Icons.sort),
                   title: const Text('Sort by Due Date'),
                   onTap: () {
-                    // TODO: Implement sort
+                    ref.read(taskProvider.notifier).sortByDueDate();
                     Navigator.pop(context);
                   },
                 ),
@@ -220,7 +218,7 @@ class HomeScreen extends ConsumerWidget {
                   leading: const Icon(Icons.priority_high),
                   title: const Text('Sort by Priority'),
                   onTap: () {
-                    // TODO: Implement sort
+                    ref.read(taskProvider.notifier).sortByPriority();
                     Navigator.pop(context);
                   },
                 ),
@@ -249,9 +247,9 @@ class HomeScreen extends ConsumerWidget {
               children: [
                 Text(
                   'More Options',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
                 ListTile(
@@ -259,7 +257,7 @@ class HomeScreen extends ConsumerWidget {
                   title: const Text('Clear Completed Tasks'),
                   onTap: () async {
                     Navigator.pop(context);
-                    
+
                     // Show confirmation dialog
                     final confirm = await showDialog<bool>(
                       context: context,
@@ -280,13 +278,15 @@ class HomeScreen extends ConsumerWidget {
                         ],
                       ),
                     );
-                    
+
                     if (confirm == true) {
                       final tasks = await ref.read(taskProvider.future);
                       final completedTasks = tasks.where((t) => t.isDone);
-                      
+
                       for (final task in completedTasks) {
-                        await ref.read(taskProvider.notifier).deleteTask(task.id);
+                        await ref
+                            .read(taskProvider.notifier)
+                            .deleteTask(task.id);
                       }
                     }
                   },
@@ -296,7 +296,11 @@ class HomeScreen extends ConsumerWidget {
                   title: const Text('Refresh'),
                   onTap: () {
                     Navigator.pop(context);
-                    ref.invalidate(taskProvider);
+                    ref.read(taskProvider.notifier).refreshTasks();
+
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('Tasks refreshed')));
                   },
                 ),
                 ListTile(
