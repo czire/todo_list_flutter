@@ -4,16 +4,16 @@ import 'package:todo_list/features/home/data/models/task.dart';
 
 class TaskItemCard extends ConsumerWidget {
   final Task task;
-  final VoidCallback onToggle;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
+  final VoidCallback? onToggle;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const TaskItemCard({
     super.key,
     required this.task,
-    required this.onToggle,
-    required this.onEdit,
-    required this.onDelete,
+    this.onToggle,
+    this.onEdit,
+    this.onDelete,
   });
 
   @override
@@ -33,7 +33,7 @@ class TaskItemCard extends ConsumerWidget {
         ),
       ),
       confirmDismiss: (direction) async {
-        onDelete();
+        onDelete?.call();
         return false; // Prevent automatic dismissal, we handle it manually
       },
       child: Card(
@@ -50,7 +50,7 @@ class TaskItemCard extends ConsumerWidget {
                   duration: const Duration(milliseconds: 200),
                   child: Checkbox(
                     value: task.isDone,
-                    onChanged: (_) => onToggle(),
+                    onChanged: (_) => onToggle?.call(),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),

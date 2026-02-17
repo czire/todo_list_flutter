@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:todo_list/features/categories/presentation/widgets/category_section.dart';
+import 'package:flutter/rendering.dart';
+import 'package:todo_list/core/widgets/note_message.dart';
 
+// TODO: Put real
 class CategoriesScreen extends StatelessWidget {
   const CategoriesScreen({super.key});
 
@@ -11,10 +13,30 @@ class CategoriesScreen extends StatelessWidget {
 
     // Mock categories for UI demonstration
     final categories = [
-      {'name': 'Work', 'icon': Icons.work_outline, 'taskCount': 5, 'color': Colors.blue},
-      {'name': 'Personal', 'icon': Icons.person_outline, 'taskCount': 3, 'color': Colors.green},
-      {'name': 'Shopping', 'icon': Icons.shopping_cart_outlined, 'taskCount': 2, 'color': Colors.orange},
-      {'name': 'Health', 'icon': Icons.favorite_outline, 'taskCount': 1, 'color': Colors.red},
+      {
+        'name': 'Work',
+        'icon': Icons.work_outline,
+        'taskCount': 5,
+        'color': Colors.blue,
+      },
+      {
+        'name': 'Personal',
+        'icon': Icons.person_outline,
+        'taskCount': 3,
+        'color': Colors.green,
+      },
+      {
+        'name': 'Shopping',
+        'icon': Icons.shopping_cart_outlined,
+        'taskCount': 2,
+        'color': Colors.orange,
+      },
+      {
+        'name': 'Health',
+        'icon': Icons.favorite_outline,
+        'taskCount': 1,
+        'color': Colors.red,
+      },
     ];
 
     return Scaffold(
@@ -24,15 +46,15 @@ class CategoriesScreen extends StatelessWidget {
           children: [
             Text(
               'Categories',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             Text(
               '${categories.length} categories',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -63,6 +85,12 @@ class CategoriesScreen extends StatelessWidget {
             ),
             child: CustomScrollView(
               slivers: [
+                
+                SliverToBoxAdapter(
+                  child: NoteMessage(
+                    message: "NOTE: These are just mock datas",
+                  ),
+                ),
                 // Filter and sort section
                 SliverToBoxAdapter(
                   child: Padding(
@@ -103,6 +131,7 @@ class CategoriesScreen extends StatelessWidget {
                     ),
                   ),
                 ),
+
                 // Category cards grid
                 if (isDesktop || isTablet)
                   SliverPadding(
@@ -117,18 +146,15 @@ class CategoriesScreen extends StatelessWidget {
                         crossAxisSpacing: 16,
                         childAspectRatio: isDesktop ? 2.5 : 2,
                       ),
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final category = categories[index];
-                          return _CategoryCard(
-                            name: category['name'] as String,
-                            icon: category['icon'] as IconData,
-                            taskCount: category['taskCount'] as int,
-                            color: category['color'] as Color,
-                          );
-                        },
-                        childCount: categories.length,
-                      ),
+                      delegate: SliverChildBuilderDelegate((context, index) {
+                        final category = categories[index];
+                        return _CategoryCard(
+                          name: category['name'] as String,
+                          icon: category['icon'] as IconData,
+                          taskCount: category['taskCount'] as int,
+                          color: category['color'] as Color,
+                        );
+                      }, childCount: categories.length),
                     ),
                   )
                 else
@@ -138,64 +164,20 @@ class CategoriesScreen extends StatelessWidget {
                       vertical: 8,
                     ),
                     sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          final category = categories[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: _CategoryCard(
-                              name: category['name'] as String,
-                              icon: category['icon'] as IconData,
-                              taskCount: category['taskCount'] as int,
-                              color: category['color'] as Color,
-                            ),
-                          );
-                        },
-                        childCount: categories.length,
-                      ),
-                    ),
-                  ),
-                // Category sections with tasks
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      isDesktop ? 32 : (isTablet ? 24 : 16),
-                      24,
-                      isDesktop ? 32 : (isTablet ? 24 : 16),
-                      16,
-                    ),
-                    child: Text(
-                      'Tasks by Category',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                    ),
-                  ),
-                ),
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(
-                    isDesktop ? 32 : (isTablet ? 24 : 16),
-                    0,
-                    isDesktop ? 32 : (isTablet ? 24 : 16),
-                    16,
-                  ),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
+                      delegate: SliverChildBuilderDelegate((context, index) {
                         final category = categories[index];
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: CategorySection(
-                            categoryName: category['name'] as String,
-                            categoryIcon: category['icon'] as IconData,
-                            categoryColor: category['color'] as Color,
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _CategoryCard(
+                            name: category['name'] as String,
+                            icon: category['icon'] as IconData,
+                            taskCount: category['taskCount'] as int,
+                            color: category['color'] as Color,
                           ),
                         );
-                      },
-                      childCount: categories.length,
+                      }, childCount: categories.length),
                     ),
                   ),
-                ),
               ],
             ),
           ),
@@ -236,11 +218,7 @@ class _CategoryCard extends StatelessWidget {
                   color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 28,
-                ),
+                child: Icon(icon, color: color, size: 28),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -251,15 +229,15 @@ class _CategoryCard extends StatelessWidget {
                     Text(
                       name,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '$taskCount ${taskCount == 1 ? 'task' : 'tasks'}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),

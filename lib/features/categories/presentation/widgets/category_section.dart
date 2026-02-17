@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:todo_list/features/home/presentation/widgets/task_item_card.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:todo_list/features/home/presentation/providers/services_provider.dart';
 
-class CategorySection extends StatelessWidget {
+class CategorySection extends ConsumerWidget {
   final String categoryName;
   final IconData categoryIcon;
   final Color categoryColor;
@@ -14,20 +15,8 @@ class CategorySection extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // Mock tasks for this category
-    final categoryTasks = [
-      {
-        'id': '1',
-        'title': 'Sample task in $categoryName',
-        'isCompleted': false,
-      },
-      {
-        'id': '2',
-        'title': 'Another task here',
-        'isCompleted': true,
-      },
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tasks = ref.watch(taskProvider).value ?? [];
 
     return Card(
       child: Column(
@@ -36,7 +25,7 @@ class CategorySection extends StatelessWidget {
           // Category header
           InkWell(
             onTap: () {
-              // Navigate to category detail or expand/collapse
+              // TODO: Navigate to category detail or expand/collapse
             },
             borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
             child: Container(
@@ -55,11 +44,7 @@ class CategorySection extends StatelessWidget {
                       color: categoryColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(
-                      categoryIcon,
-                      color: categoryColor,
-                      size: 20,
-                    ),
+                    child: Icon(categoryIcon, color: categoryColor, size: 20),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -68,51 +53,27 @@ class CategorySection extends StatelessWidget {
                       children: [
                         Text(
                           categoryName,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: categoryColor,
                               ),
                         ),
                         Text(
-                          '${categoryTasks.length} ${categoryTasks.length == 1 ? 'task' : 'tasks'}',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          '${tasks.length} ${tasks.length == 1 ? 'task' : 'tasks'}',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                         ),
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.keyboard_arrow_down,
-                    color: categoryColor,
-                  ),
+                  Icon(Icons.keyboard_arrow_down, color: categoryColor),
                 ],
               ),
-            ),
-          ),
-          // Task list
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              children: categoryTasks.asMap().entries.map((entry) {
-                final task = entry.value;
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text("Hello World"),
-                  // TaskItemCard(
-                  //   title: task['title'] as String,
-                  //   isCompleted: task['isCompleted'] as bool,
-                  //   category: categoryName,
-                  //   categoryColor: categoryColor,
-                  //   onToggle: () {
-                  //     // Handle task toggle
-                  //   },
-                  //   onDelete: () {
-                  //     // Handle task delete
-                  //   },
-                  // ),
-                );
-              }).toList(),
             ),
           ),
         ],

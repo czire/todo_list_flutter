@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todo_list/core/widgets/note_message.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -15,15 +16,15 @@ class SettingsScreen extends StatelessWidget {
           children: [
             Text(
               'Settings',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             Text(
               'Customize your experience',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -37,10 +38,9 @@ class SettingsScreen extends StatelessWidget {
               maxWidth: isDesktop ? 800 : double.infinity,
             ),
             child: ListView(
-              padding: EdgeInsets.all(
-                isDesktop ? 32 : (isTablet ? 24 : 16),
-              ),
+              padding: EdgeInsets.all(isDesktop ? 32 : (isTablet ? 24 : 16)),
               children: [
+                NoteMessage(message: "NOTE: This has no functionality"),
                 // Appearance Section
                 _SettingsSection(
                   title: 'Appearance',
@@ -52,18 +52,9 @@ class SettingsScreen extends StatelessWidget {
                       leading: const Icon(Icons.brightness_6_outlined),
                       trailing: SegmentedButton<String>(
                         segments: const [
-                          ButtonSegment(
-                            value: 'light',
-                            label: Text('Light'),
-                          ),
-                          ButtonSegment(
-                            value: 'dark',
-                            label: Text('Dark'),
-                          ),
-                          ButtonSegment(
-                            value: 'system',
-                            label: Text('System'),
-                          ),
+                          ButtonSegment(value: 'light', label: Text('Light')),
+                          ButtonSegment(value: 'dark', label: Text('Dark')),
+                          ButtonSegment(value: 'system', label: Text('System')),
                         ],
                         selected: const {'system'},
                         onSelectionChanged: (Set<String> selected) {
@@ -284,18 +275,14 @@ class _SettingsSection extends StatelessWidget {
               Text(
                 title,
                 style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
         ),
-        Card(
-          child: Column(
-            children: children,
-          ),
-        ),
+        Card(child: Column(children: children)),
       ],
     );
   }
@@ -321,16 +308,13 @@ class _SettingsTile extends StatelessWidget {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       leading: leading,
-      title: Text(
-        title,
-        style: Theme.of(context).textTheme.bodyLarge,
-      ),
+      title: Text(title, style: Theme.of(context).textTheme.bodyLarge),
       subtitle: subtitle != null
           ? Text(
               subtitle!,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             )
           : null,
       trailing: trailing,
@@ -343,10 +327,7 @@ class _ColorDot extends StatelessWidget {
   final Color color;
   final bool selected;
 
-  const _ColorDot({
-    required this.color,
-    required this.selected,
-  });
+  const _ColorDot({required this.color, required this.selected});
 
   @override
   Widget build(BuildContext context) {
@@ -368,11 +349,7 @@ class _ColorDot extends StatelessWidget {
               : null,
         ),
         child: selected
-            ? const Icon(
-                Icons.check,
-                color: Colors.white,
-                size: 16,
-              )
+            ? const Icon(Icons.check, color: Colors.white, size: 16)
             : null,
       ),
     );

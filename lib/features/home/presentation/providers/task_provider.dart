@@ -7,21 +7,18 @@ import 'package:todo_list/features/home/presentation/providers/services_provider
 class TaskNotifier extends AsyncNotifier<List<Task>> {
   late final TaskLocalRepository repository;
 
+  // ---------------- Lifecycle ----------------
   @override
   Future<List<Task>> build() async {
     repository = ref.watch(tasksRepositoryProvider);
 
-    // Load tasks from Hive
     var tasks = await repository.getTasks();
 
-    // If empty, seed with mock data (only once)
+    // Seed with mock data if empty
     if (tasks.isEmpty) {
-      final mockTasks = _getMockTasks();
-
-      for (final task in mockTasks) {
+      for (final task in _getMockTasks()) {
         await repository.addTask(task);
       }
-
       tasks = await repository.getTasks();
     }
 
@@ -29,19 +26,33 @@ class TaskNotifier extends AsyncNotifier<List<Task>> {
     return tasks;
   }
 
-  Future<void> saveTask(Task task) async {
+  // ---------------- CRUD ----------------
+  Future<void> addTask(Task task) async {
     _validateTask(task);
+    _ensureUniqueId(task);
+    await repository.addTask(task);
+    state = AsyncValue.data(await repository.getTasks());
+  }
 
-    final existingTasks = await repository.getTasks();
-    final exists = existingTasks.any((t) => t.id == task.id);
+  Future<void> updateTask(String id, Task updatedTask) async {
+    _validateTask(updatedTask);
+    await getTask(id); // ensure exists
+    await repository.updateTask(updatedTask);
+    state = AsyncValue.data(await repository.getTasks());
+  }
 
-    if (exists) {
-      // Update existing task
-      await updateTask(task.id, task);
-    } else {
-      // Add new task
-      await addTask(task);
+  Future<void> deleteTask(String id) async {
+    if (id.isEmpty) throw ValidationException('Task ID cannot be empty');
+    await repository.deleteTask(id);
+    state = AsyncValue.data(await repository.getTasks());
+  }
+
+  Future<void> deleteCompletedTasks() async {
+    final tasks = await repository.getTasks();
+    for (final task in tasks.where((t) => t.isDone)) {
+      await repository.deleteTask(task.id);
     }
+    state = AsyncValue.data(await repository.getTasks());
   }
 
   Future<Task> getTask(String id) async {
@@ -52,28 +63,14 @@ class TaskNotifier extends AsyncNotifier<List<Task>> {
     );
   }
 
-  Future<void> getActiveTasks() async {
-    state = AsyncValue.loading();
-    final tasks = await repository.getTasks();
-    state = AsyncValue.data(tasks.where((t) => !t.isDone).toList());
-  }
-
-  Future<void> getCompletedTasks() async {
-    state = AsyncValue.loading();
-    final tasks = await repository.getTasks();
-    state = AsyncValue.data(tasks.where((t) => t.isDone).toList());
-  }
-
-  Future<void> addTask(Task task) async {
+  Future<void> saveTask(Task task) async {
     _validateTask(task);
-    _ensureUniqueId(task);
-
-    await repository.addTask(task);
-    state = AsyncValue.data(await repository.getTasks());
+    final exists = (await repository.getTasks()).any((t) => t.id == task.id);
+    exists ? await updateTask(task.id, task) : await addTask(task);
   }
 
   Future<void> refreshTasks() async {
-    state = AsyncValue.loading();
+    state = const AsyncValue.loading();
     state = AsyncValue.data(await repository.getTasks());
   }
 
@@ -86,18 +83,7 @@ class TaskNotifier extends AsyncNotifier<List<Task>> {
       category: 'General',
       categoryColor: Colors.grey,
     );
-
     await addTask(newTask);
-  }
-
-  Future<void> updateTask(String id, Task updatedTask) async {
-    _validateTask(updatedTask);
-
-    // Ensure task exists
-    await getTask(id);
-
-    await repository.updateTask(updatedTask);
-    state = AsyncValue.data(await repository.getTasks());
   }
 
   Future<void> toggleTaskCompletion(String id) async {
@@ -107,91 +93,62 @@ class TaskNotifier extends AsyncNotifier<List<Task>> {
     state = AsyncValue.data(await repository.getTasks());
   }
 
-  Future<void> deleteTask(String id) async {
-    if (id.isEmpty) {
-      throw ValidationException('Task ID cannot be empty');
-    }
-
-    await repository.deleteTask(id);
-    state = AsyncValue.data(await repository.getTasks());
+  // ---------------- Filters ----------------
+  Future<void> getTasksByCategory(String category) async {
+    state = const AsyncValue.loading();
+    final tasks = await repository.getTasks();
+    state = AsyncValue.data(
+      tasks.where((t) => t.category.toLowerCase() == category.toLowerCase()).toList(),
+    );
   }
 
-  Future<void> deleteCompletedTasks() async {
+  Future<void> getTasksByCompletion(bool isDone) async {
+    state = const AsyncValue.loading();
     final tasks = await repository.getTasks();
-    final completedTasks = tasks.where((t) => t.isDone);
+    state = AsyncValue.data(tasks.where((t) => t.isDone == isDone).toList());
+  }
 
-    for (final task in completedTasks) {
-      await repository.deleteTask(task.id);
-    }
-
-    state = AsyncValue.data(await repository.getTasks());
+  // ---------------- Sorting ----------------
+  Future<void> sortTasks(Comparator<Task> comparator) async {
+    final tasks = await repository.getTasks();
+    tasks.sort(comparator);
+    state = AsyncValue.data(tasks);
   }
 
   Future<void> sortByDueDate() async {
-    final tasks = await repository.getTasks();
-    tasks.sort((a, b) {
+    await sortTasks((a, b) {
       if (a.dueDate == null && b.dueDate == null) return 0;
       if (a.dueDate == null) return 1;
       if (b.dueDate == null) return -1;
       return a.dueDate!.compareTo(b.dueDate!);
     });
-    state = AsyncValue.data(tasks);
   }
 
   Future<void> sortByPriority() async {
-    final tasks = await repository.getTasks();
-    tasks.sort((a, b) => b.priority.compareTo(a.priority));
-    state = AsyncValue.data(tasks);
+    await sortTasks((a, b) => b.priority.compareTo(a.priority));
   }
 
+  // ---------------- Validation ----------------
   void _validateTask(Task task) {
-    // Title validation
-    if (task.title.trim().isEmpty) {
-      throw ValidationException('Task title is required');
-    }
+    final title = task.title.trim();
+    if (title.isEmpty) throw ValidationException('Task title is required');
+    if (title.length > 100) throw ValidationException('Task title must be less than 100 characters');
 
-    if (task.title.trim().length > 100) {
-      throw ValidationException('Task title must be less than 100 characters');
-    }
-
-    if (task.title.trim().isEmpty) {
-      throw ValidationException('Task title must be at least 1 character');
-    }
-
-    // Category validation
-    if (task.category.isEmpty) {
-      throw ValidationException('Category is required');
-    }
-
-    // Priority validation
+    if (task.category.isEmpty) throw ValidationException('Category is required');
     if (task.priority < 1 || task.priority > 3) {
-      throw ValidationException(
-        'Priority must be between 1 (Low) and 3 (High)',
-      );
+      throw ValidationException('Priority must be between 1 (Low) and 3 (High)');
     }
 
-    // Due date validation
-    if (task.dueDate != null) {
-      final now = DateTime.now();
-      final today = DateTime(now.year, now.month, now.day);
-      final dueDate = DateTime(
-        task.dueDate!.year,
-        task.dueDate!.month,
-        task.dueDate!.day,
-      );
-
-      if (dueDate.isBefore(today)) {
-        throw ValidationException('Due date cannot be in the past');
-      }
+    if (task.dueDate != null && task.dueDate!.isBefore(DateTime.now())) {
+      throw ValidationException('Due date cannot be in the past');
     }
   }
 
   void _ensureUniqueId(Task task) {
-    if (task.id.isEmpty) {
-      throw ValidationException('Task must have a valid ID');
-    }
+    if (task.id.isEmpty) throw ValidationException('Task must have a valid ID');
   }
 
+  // ---------------- Mock Data ----------------
   List<Task> _getMockTasks() {
     return [
       Task(
@@ -243,26 +200,22 @@ class TaskNotifier extends AsyncNotifier<List<Task>> {
   }
 }
 
-// This exposes the TaskNotifier to the rest of the app
+// Provider
 final taskProvider = AsyncNotifierProvider<TaskNotifier, List<Task>>(
   () => TaskNotifier(),
 );
 
+// Exceptions
 class ValidationException implements Exception {
   final String message;
-
   ValidationException(this.message);
-
   @override
   String toString() => message;
 }
 
-/// Thrown when a requested task is not found.
 class TaskNotFoundException implements Exception {
   final String message;
-
   TaskNotFoundException(this.message);
-
   @override
   String toString() => message;
 }

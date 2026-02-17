@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:todo_list/features/home/presentation/providers/task_provider.dart';
 import 'package:todo_list/features/home/presentation/widgets/empty_state_message.dart';
+import 'package:todo_list/core/widgets/note_message.dart';
 import 'package:todo_list/features/home/presentation/widgets/task_input_field.dart';
 import 'package:todo_list/features/home/presentation/widgets/task_list_view.dart';
 import 'package:todo_list/features/home/presentation/widgets/task_dialog.dart';
@@ -81,7 +82,9 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   // Task input field
                   const TaskInputField(),
-                  const SizedBox(height: 24),
+                  NoteMessage(
+                    message: "NOTE: Slide from right to left to delete a task.",
+                  ),
                   // Task list or empty state with loading/error handling
                   Expanded(
                     child: tasksAsync.when(
@@ -193,7 +196,7 @@ class HomeScreen extends ConsumerWidget {
                   leading: const Icon(Icons.check_circle_outline),
                   title: const Text('Active Tasks'),
                   onTap: () {
-                    ref.read(taskProvider.notifier).getActiveTasks();
+                    ref.read(taskProvider.notifier).getTasksByCompletion(false);
                     Navigator.pop(context);
                   },
                 ),
@@ -201,7 +204,7 @@ class HomeScreen extends ConsumerWidget {
                   leading: const Icon(Icons.done_all),
                   title: const Text('Completed Tasks'),
                   onTap: () {
-                    ref.read(taskProvider.notifier).getCompletedTasks();
+                    ref.read(taskProvider.notifier).getTasksByCompletion(true);
                     Navigator.pop(context);
                   },
                 ),
